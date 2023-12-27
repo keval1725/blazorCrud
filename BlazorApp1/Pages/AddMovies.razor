@@ -1,0 +1,114 @@
+﻿@page "/movie/add"
+@page "/movie/edit/{userId:int}"
+@using BlazorApp1.Data
+@using BlazorApp1.Service
+@inject IMovieService MovieService
+@inject NavigationManager Navigation
+
+@if (UserId > 0)
+{
+    <PageTitle>Edit Movies</PageTitle>
+}
+else
+{
+    <PageTitle>Add Movies</PageTitle>
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <EditForm Model="@movie" OnValidSubmit="SubmitForm">
+                <DataAnnotationsValidator />
+                <div class="mb-4">
+                    @if (UserId > 0)
+                    {
+                        <h3>Edit Movies</h3>
+                    }
+                    else
+                    {
+                        <h3>Add Movies</h3>
+                    }
+                </div>
+                <hr />
+
+                <div class="form-group row">
+                    <label for="Title" class="col-sm-2 col-form-label">Title</label>
+                    <div class="col-sm-10">
+                        <InputText id="Title" class="form-control" placeholder="Title" @bind-Value="movie.Title" />
+                        <ValidationMessage For="@(() => movie.Title)" />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="Director" class="col-sm-2 col-form-label">Director</label>
+                    <div class="col-sm-10">
+                        <InputText id="Director" class="form-control" placeholder="Director" @bind-Value="movie.Director" />
+                        <ValidationMessage For="@(() => movie.Director)" />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="Genre" class="col-sm-2 col-form-label">Genre</label>
+                    <div class="col-sm-10">
+                        <InputText id="Genre" class="form-control" placeholder="Genre" @bind-Value="movie.Genre" />
+                        <ValidationMessage For="@(() => movie.Genre)" />
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-sm-10 offset-sm-2">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+    private string message = string.Empty;
+    private string Title = "Add Person";
+
+    Movie movie = new Movie();
+    protected override async Task OnInitializedAsync()
+    {
+        message = "wait...";
+        if (UserId > 0)
+        {
+            Title = "Upage Person";
+            movie = await MovieService.GetMovieById(UserId);
+        }
+        base.OnInitializedAsync();
+    }
+
+    private async void SubmitForm()
+    {
+        message = "wait...";
+        bool Movie =await MovieService.CreateUpdateMovies(movie);
+        if (Movie)
+        {
+            message = "Save Successfully..";
+            Cancle();
+        }
+        else
+        {
+            message = "Could not saved..";
+        }
+
+    }
+
+    private void Cancle()
+    {
+        try
+        {
+        Navigation.NavigateTo("/");
+
+        }
+        catch(Exception ex)
+        {
+            
+        }
+    }
+}

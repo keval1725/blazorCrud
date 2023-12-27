@@ -1,0 +1,100 @@
+﻿@page "/"
+@using BlazorApp1.Data
+@using BlazorApp1.Service
+@inject IMovieService MovieService
+@inject NavigationManager Navigation
+@inject IJSRuntime jsRuntime
+
+
+<PageTitle>Movies</PageTitle>
+<div class="row d-flex">
+    <div class="col-md-6 d-flex align-items-center">
+        <h1>MovieList</h1>
+    </div>
+    <div class="col-md-6 d-flex align-items-center justify-content-end">
+        <a href='movie/add' class="btn btn-primary" role="button">
+            <i class="fas fa-user-plus"></i>
+            Add Movies
+        </a>
+    </div>
+</div>
+@if (movie == null)
+{
+    <h2>@message</h2>
+}
+else
+{
+    <table class="table table-striped table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>Id</th>
+                <th>Title</th>
+                <th>Director</th>
+                <th>Genre</th>
+                <th>Release Year</th>
+                <th>Rating</th>
+                <th>Duration</th>
+                <th>Edit</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var movies in movie)
+            {
+                <tr>
+                    <td>@(movies.Id != null ? movies.Id : 0)</td>
+                    <td><a href='movie/edit/@movies.Id' role="button">@(movies.Title != null ? movies.Title : "--")</a></td>
+                    <td>@(movies.Director != null ? movies.Director : "--")</td>
+                    <td>@(movies.Genre != null ? movies.Genre : "--")</td>
+                    <td>@(movies.ReleaseYear != null ? movies.ReleaseYear : "--")</td>
+                    <td>@(movies.Rating != null ? movies.Rating : "--")</td>
+                    <td>@(movies.Duration != null ? movies.Duration : "--")</td>
+                    <td>
+                        <a href='movie/edit/@movies.Id' class="btn btn-warning btn-sm" role="button">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                    </td>
+                    <td>
+                        <a @onclick="async ()=> await Delete(movies.Id)" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+
+@code {
+    private List<Movie> movie { get; set; }
+    private string message = string.Empty;
+    private string Title = "Add Person";
+    protected override async Task OnInitializedAsync()
+    {
+        message = "wait...";
+
+        Title = "Upage Person";
+        movie = await MovieService.GetMovies();
+        if (movie != null)
+        {
+            message = "Data Get SuccessFull.";
+        }
+        else
+        {
+            message = "Data not Available";
+
+        }
+        base.OnInitializedAsync();
+    }
+
+    private async Task Delete(int Id)
+    {
+        bool confirmed = await jsRuntime.InvokeAsync<bool>("confirm", "Are you sure????");
+        if (confirmed)
+        {            
+         await MovieService.DeleteMovieById(Id);
+        }
+    }
+    
+}
